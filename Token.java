@@ -19,6 +19,33 @@ public class Token {
         this.value = value;
         this.line = line;
     }
+    //Getters method is the only way to read fields from outside
+
+        public TokenType getType(){
+            return type;
+
+        }
+    //return raw text as it appears in the source code
+    //ex-['let','x','10']
+
+    public String getValue(){
+        return value;
+    }
+
+    //returns the line number where the token was found
+    //helps in telling error msg on specific line
+    public int getLine(){
+        return line;
+    }
+
+    //to string -very helpul for debugging purpuse
+    //returns a readable description of this token
+    //* Example output:  Token[LINE:1  TYPE:KEYWORD_LET  VALUE:"let"]
+
+    @Override
+    public String toString(){
+        return "Token[LINE:" + line + "  TYPE:" + type + "  VALUE:\"" + value + "\"]";
+    }
 
 
 }
