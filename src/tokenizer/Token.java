@@ -1,3 +1,4 @@
+package src.tokenizer;
  /* IMPORTANT DESIGN DECISION:
  * This class is IMMUTABLE — once created, nothing can be changed.
  * There are NO setters, only getters.
@@ -49,3 +50,5 @@ public class Token {
 
 
 }
+
+
