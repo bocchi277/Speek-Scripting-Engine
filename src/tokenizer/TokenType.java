@@ -1,41 +1,48 @@
-package src.tokenizer;
-//Speek keywords : let,be,say,if,then,repeat,times
-//Special phrases :"is greater than" collapses into GREATER_THAN
+package tokenizer;
 
+import java.util.HashMap;
+import java.util.Map;
+
+/**
+ * This Enum defines every type of "word" or "symbol" our language understands.
+ * To follow SOLID, we've moved the keyword lookup logic here so the Tokenizer
+ * doesn't have to manage a giant list of strings.
+ */
 public enum TokenType {
-    //Literals
-    NUMBER, //eg. 10,3.14
-    STRING, //eg "hello"
-    IDENTIFIER, //eg. x,score,result
+    // Basic building blocks
+    NUMBER, STRING, IDENTIFIER,
 
-    //Arithmetic operators
-    PLUS, //+
-    MINUS, //-
-    MUL,  //* 
-    DIV, // /
+    // Math operations
+    PLUS, MINUS, MUL, DIV,
 
-    //Comparison operators
-    GREATER_THAN, //> or the phrase "is greater than"
-    LESS_THAN, //< or "is less than"
-    EQUALS, // ==
+    // Comparisons
+    GREATER_THAN, LESS_THAN, EQUALS,
 
-    //SPEEK keywords
-    LET, //let
-    BE, //be
-    SAY, //say
-    IF, //if
-    THEN, //then
-    REPEAT, //repeat
-    TIMES, //times
-    IS, //is
-    GREATER, //greater(intermediate)
-    THAN, //than
+    // SPEEK language keywords [cite: 35, 38]
+    LET, BE, SAY, IF, THEN, REPEAT, TIMES, IS,
 
-    //Structure
-    NEWLINE, //end of a logical line
-    EOF //end of source
+    // Control tokens
+    NEWLINE, EOF;
 
+    // A simple map to quickly find if a word is a keyword or just a variable name
+    private static final Map<String, TokenType> KEYWORDS = new HashMap<>();
 
+    static {
+        KEYWORDS.put("let", LET);
+        KEYWORDS.put("be", BE);
+        KEYWORDS.put("say", SAY);
+        KEYWORDS.put("if", IF);
+        KEYWORDS.put("then", THEN);
+        KEYWORDS.put("repeat", REPEAT);
+        KEYWORDS.put("times", TIMES);
+        KEYWORDS.put("is", IS);
+    }
 
-    
+    /**
+     * SRP: This method handles the responsibility of "classifying" a word.
+     * If it's in our map, it's a keyword; otherwise, it's an IDENTIFIER[cite: 64].
+     */
+    public static TokenType lookup(String word) {
+        return KEYWORDS.getOrDefault(word.toLowerCase(), IDENTIFIER);
+    }
 }
