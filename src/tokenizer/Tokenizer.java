@@ -37,7 +37,7 @@ public class Tokenizer {
         phrases.put("is greater than", TokenType.GREATER_THAN);
     }
     public List<Token> tokenize() {
-    List<Token> tokens = new ArrayList<>();
+        List<Token> tokens = new ArrayList<>();
 
         while (pos < source.length()) {
 
@@ -83,4 +83,65 @@ public class Tokenizer {
         tokens.add(createToken(TokenType.EOF, "", line));
         return tokens;
 }
+    private void skipWhitespace() {
+        while (pos < source.length()) {
+            char c = source.charAt(pos);
+            if (c == ' ' || c == '\t') pos++;
+            else break;
+        }
+    }
+
+    private Token createToken(TokenType type, String value, int line) {
+        return new Token(type, value, line);
+    }
+    private Token readString() {
+        int startLine = line;
+        pos++;
+
+        StringBuilder sb = new StringBuilder();
+
+        while (pos < source.length() && source.charAt(pos) != '"') {
+            char c = source.charAt(pos);
+
+            if (c == '\\' && pos + 1 < source.length()) {
+                pos++;
+                char next = source.charAt(pos);
+
+                switch (next) {
+                    case 'n': sb.append('\n'); break;
+                    case 't': sb.append('\t'); break;
+                    case '"': sb.append('"'); break;
+                    case '\\': sb.append('\\'); break;
+                    default: sb.append(next);
+                }
+            } else {
+                sb.append(c);
+            }
+            pos++;
+        }
+
+        if (pos >= source.length()) {
+            throw new RuntimeException("Unterminated string at line " + startLine);
+        }
+
+        pos++;
+        return createToken(TokenType.STRING, sb.toString(), startLine);
+    }
+    private Token readNumber() {
+        int start = pos;
+        int startLine = line;
+        boolean dot = false;
+
+        while (pos < source.length()) {
+            char c = source.charAt(pos);
+
+            if (Character.isDigit(c)) pos++;
+            else if (c == '.' && !dot) {
+                dot = true;
+                pos++;
+            } else break;
+        }
+
+        return createToken(TokenType.NUMBER, source.substring(start, pos),startLine);
+    }
 }
