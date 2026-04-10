@@ -36,4 +36,51 @@ public class Tokenizer {
 
         phrases.put("is greater than", TokenType.GREATER_THAN);
     }
+    public List<Token> tokenize() {
+    List<Token> tokens = new ArrayList<>();
+
+        while (pos < source.length()) {
+
+            skipWhitespace();
+
+            if (pos >= source.length()) break;
+
+            char c = source.charAt(pos);
+
+            if (c == '\n') {
+                if (!tokens.isEmpty() &&
+                        tokens.get(tokens.size() - 1).getType() != TokenType.NEWLINE) {
+                    tokens.add(createToken(TokenType.NEWLINE, "\\n", line));
+                }
+                line++;
+                pos++;
+                continue;
+            }
+
+            if (c == '\r') {
+                pos++;
+                continue;
+            }
+
+            if (c == '"') {
+                tokens.add(readString());
+                continue;
+            }
+
+            if (Character.isDigit(c)) {
+                tokens.add(readNumber());
+                continue;
+            }
+
+            if (Character.isLetter(c) || c == '_') {
+                tokens.addAll(readWordOrPhrase());
+                continue;
+            }
+
+            handleOperator(tokens, c);
+        }
+
+        tokens.add(createToken(TokenType.EOF, "", line));
+        return tokens;
+}
 }
