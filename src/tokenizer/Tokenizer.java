@@ -3,15 +3,15 @@ package tokenizer;
 import java.util.*;
 
 /**
- * Tokenizer
- *
- * Converts raw source code into tokens.
+ * Tokenizer — reads raw source code character by character
+ * and breaks it into a list of tokens (words, numbers, symbols, etc.)
+ * that the parser can understand.
  */
 public class Tokenizer {
 
-    private final String source;
-    private int pos;
-    private int line;
+    private final String source;  // the full source code string
+    private int pos;              // current character position
+    private int line;             // current line number (for error reporting)
 
     public Tokenizer(String source) {
         this.source = source;
@@ -19,10 +19,10 @@ public class Tokenizer {
         this.line = 1;
     }
 
-        // Keywords (Open/Closed Principle)
+    // Reserved words the language understands (e.g. "if", "let", "repeat")
     private static final Map<String, TokenType> keywords = new HashMap<>();
 
-    // Phrases (like "is greater than")
+    // Multi-word expressions treated as a single token (e.g. "is greater than")
     private static final Map<String, TokenType> phrases = new HashMap<>();
 
     static {
@@ -36,6 +36,11 @@ public class Tokenizer {
 
         phrases.put("is greater than", TokenType.GREATER_THAN);
     }
+
+    /**
+     * Main method — scans the entire source and returns all tokens in order.
+     * Each character is checked and routed to the right reader method.
+     */
     public List<Token> tokenize() {
         List<Token> tokens = new ArrayList<>();
 
@@ -47,6 +52,7 @@ public class Tokenizer {
 
             char c = source.charAt(pos);
 
+            // Newline marks the end of a statement — add token once, then move to next line
             if (c == '\n') {
                 if (!tokens.isEmpty() &&
                         tokens.get(tokens.size() - 1).getType() != TokenType.NEWLINE) {
@@ -57,11 +63,13 @@ public class Tokenizer {
                 continue;
             }
 
+            // Windows line ending — skip \r, the \n after it will be handled above
             if (c == '\r') {
                 pos++;
                 continue;
             }
 
+            // Each character type is handled by a dedicated reader
             if (c == '"') {
                 tokens.add(readString());
                 continue;
@@ -80,9 +88,12 @@ public class Tokenizer {
             handleOperator(tokens, c);
         }
 
+        // EOF signals the parser that there's nothing left to read
         tokens.add(createToken(TokenType.EOF, "", line));
         return tokens;
-}
+    }
+
+    // Skips spaces and tabs between tokens — they don't affect meaning
     private void skipWhitespace() {
         while (pos < source.length()) {
             char c = source.charAt(pos);
@@ -94,9 +105,15 @@ public class Tokenizer {
     private Token createToken(TokenType type, String value, int line) {
         return new Token(type, value, line);
     }
+
+    /**
+     * Reads a quoted string like "hello world".
+     * Handles escape sequences: \n (newline), \t (tab), \" (quote), \\ (backslash).
+     * Throws an error if the string is never closed.
+     */
     private Token readString() {
         int startLine = line;
-        pos++;
+        pos++; // move past the opening quote
 
         StringBuilder sb = new StringBuilder();
 
@@ -124,9 +141,14 @@ public class Tokenizer {
             throw new RuntimeException("Unterminated string at line " + startLine);
         }
 
-        pos++;
+        pos++; // move past the closing quote
         return createToken(TokenType.STRING, sb.toString(), startLine);
     }
+
+    /**
+     * Reads an integer or decimal number (e.g. 42 or 3.14).
+     * Only one decimal point is allowed — the second dot stops reading.
+     */
     private Token readNumber() {
         int start = pos;
         int startLine = line;
@@ -142,6 +164,95 @@ public class Tokenizer {
             } else break;
         }
 
-        return createToken(TokenType.NUMBER, source.substring(start, pos),startLine);
+        return createToken(TokenType.NUMBER, source.substring(start, pos), startLine);
+    }
+
+    /**
+     * Reads a word and decides what it is:
+     * 1. First checks if it starts a known phrase (e.g. "is greater than")
+     * 2. Then checks if it's a keyword (e.g. "if", "let")
+     * 3. Otherwise treats it as a user-defined identifier (variable/function name)
+     */
+    private List<Token> readWordOrPhrase() {
+        List<Token> result = new ArrayList<>();
+
+        int start = pos;
+        int startLine = line;
+
+        while (pos < source.length() &&
+                (Character.isLetterOrDigit(source.charAt(pos)) || source.charAt(pos) == '_')) {
+            pos++;
+        }
+
+        String word = source.substring(start, pos);
+
+        for (String phrase : phrases.keySet()) {
+            if (source.startsWith(phrase, start)) {
+                pos = start + phrase.length();
+                result.add(createToken(phrases.get(phrase), phrase, startLine));
+                return result;
+            }
+        }
+
+        result.add(createToken(classify(word), word, startLine));
+        return result;
+    }
+
+    // Looks up the word in keywords map — returns IDENTIFIER if not found
+    private TokenType classify(String word) {
+        return keywords.getOrDefault(word.toLowerCase(), TokenType.IDENTIFIER);
+    }
+
+    /**
+     * Handles single-character operators (+, -, *, /, <, >)
+     * and the two-character equality check (==).
+     * A lone "=" is skipped — it has no meaning in this language yet.
+     * Unknown characters print a warning but don't crash the tokenizer.
+     */
+    private void handleOperator(List<Token> tokens, char c) {
+        switch (c) {
+            case '+':
+                tokens.add(createToken(TokenType.PLUS, "+", line));
+                pos++;
+                break;
+
+            case '-':
+                tokens.add(createToken(TokenType.MINUS, "-", line));
+                pos++;
+                break;
+
+            case '*':
+                tokens.add(createToken(TokenType.MUL, "*", line));
+                pos++;
+                break;
+
+            case '/':
+                tokens.add(createToken(TokenType.DIV, "/", line));
+                pos++;
+                break;
+
+            case '>':
+                tokens.add(createToken(TokenType.GREATER_THAN, ">", line));
+                pos++;
+                break;
+
+            case '<':
+                tokens.add(createToken(TokenType.LESS_THAN, "<", line));
+                pos++;
+                break;
+
+            case '=':
+                if (pos + 1 < source.length() && source.charAt(pos + 1) == '=') {
+                    tokens.add(createToken(TokenType.EQUALS, "==", line));
+                    pos += 2;
+                } else {
+                    pos++;
+                }
+                break;
+
+            default:
+                System.err.println("Warning: unexpected char '" + c + "' at line " + line);
+                pos++;
+        }
     }
 }
