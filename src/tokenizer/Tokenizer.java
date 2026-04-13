@@ -12,13 +12,13 @@ public class Tokenizer {
     private final String source;  // the full source code string
     private int pos;              // current character position
     private int line;             // current line number (for error reporting)
-    private Stack<Integer> indentStack;
+    private Deque<Integer> indentStack;
 
     public Tokenizer(String source) {
         this.source = source;
         this.pos = 0;
         this.line = 1;
-        this.indentStack = new Stack<>();
+        this.indentStack = new ArrayDeque<>();//// Using Deque instead of Stack because it is a modern and faster alternative.
         indentStack.push(0);
     }
 
@@ -59,7 +59,7 @@ public class Tokenizer {
         if (c == '\n') {
                 // Step 1: Add NEWLINE (same as before)
                 if (!tokens.isEmpty() &&
-                    tokens.get(tokens.size() - 1).getType() != TokenType.NEWLINE) {
+                    tokens.get(tokens.size() - 1).type() != TokenType.NEWLINE) {
                 tokens.add(createToken(TokenType.NEWLINE, "\\n", line));
                 }
 
@@ -122,7 +122,7 @@ public class Tokenizer {
 
         // EOF signals the parser that there's nothing left to read
         tokens.add(createToken(TokenType.EOF, "", line));
-        return tokens;
+        return List.copyOf(tokens);
     }
 
     // Skips spaces and tabs between tokens — they don't affect meaning
