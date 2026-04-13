@@ -22,7 +22,7 @@ public enum TokenType {
     LET, BE, SAY, IF, THEN, REPEAT, TIMES, IS,
 
     // Control tokens
-    NEWLINE, EOF;
+    NEWLINE,INDENT,DEDENT,EOF;
 
     // A simple map to quickly find if a word is a keyword or just a variable name
     private static final Map<String, TokenType> KEYWORDS = new HashMap<>();

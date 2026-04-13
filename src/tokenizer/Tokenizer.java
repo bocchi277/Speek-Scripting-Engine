@@ -12,11 +12,14 @@ public class Tokenizer {
     private final String source;  // the full source code string
     private int pos;              // current character position
     private int line;             // current line number (for error reporting)
+    private Stack<Integer> indentStack;
 
     public Tokenizer(String source) {
         this.source = source;
         this.pos = 0;
         this.line = 1;
+        this.indentStack = new Stack<>();
+        indentStack.push(0);
     }
 
     // Reserved words the language understands (e.g. "if", "let", "repeat")
@@ -53,15 +56,40 @@ public class Tokenizer {
             char c = source.charAt(pos);
 
             // Newline marks the end of a statement — add token once, then move to next line
-            if (c == '\n') {
+        if (c == '\n') {
+                // Step 1: Add NEWLINE (same as before)
                 if (!tokens.isEmpty() &&
-                        tokens.get(tokens.size() - 1).getType() != TokenType.NEWLINE) {
-                    tokens.add(createToken(TokenType.NEWLINE, "\\n", line));
+                    tokens.get(tokens.size() - 1).getType() != TokenType.NEWLINE) {
+                tokens.add(createToken(TokenType.NEWLINE, "\\n", line));
                 }
-                line++;
+
+            line++;
+            pos++;
+
+            // Step 2: Count spaces at start of next line
+            int currentIndent = 0;
+            while (pos < source.length() && (source.charAt(pos) == ' '||source.charAt(pos)=='\t')) {
+                currentIndent++;
                 pos++;
-                continue;
             }
+
+            int previousIndent = indentStack.peek();
+
+            // Step 3: Compare indentation
+            if (currentIndent > previousIndent) {
+                indentStack.push(currentIndent);
+                tokens.add(createToken(TokenType.INDENT, "", line));
+                
+            } else {
+            while (currentIndent < previousIndent) {
+                indentStack.pop();
+                previousIndent = indentStack.peek();
+                tokens.add(createToken(TokenType.DEDENT, "", line));
+                }
+            }
+
+            continue;
+        }
 
             // Windows line ending — skip \r, the \n after it will be handled above
             if (c == '\r') {
@@ -86,6 +114,10 @@ public class Tokenizer {
             }
 
             handleOperator(tokens, c);
+        }
+        while (indentStack.size() > 1) {
+                indentStack.pop();
+                tokens.add(createToken(TokenType.DEDENT, "", line));
         }
 
         // EOF signals the parser that there's nothing left to read
