@@ -35,7 +35,7 @@ public enum TokenType {
         KEYWORDS.put("then", THEN);
         KEYWORDS.put("repeat", REPEAT);
         KEYWORDS.put("times", TIMES);
-        KEYWORDS.put("is", IS);
+        
     }
 
     /**
@@ -43,6 +43,7 @@ public enum TokenType {
      * If it's in our map, it's a keyword; otherwise, it's an IDENTIFIER[cite: 64].
      */
     public static TokenType lookup(String word) {
+        if (word == null) throw new IllegalArgumentException("Cannot classify a null word");
         return KEYWORDS.getOrDefault(word.toLowerCase(), IDENTIFIER);
     }
 }

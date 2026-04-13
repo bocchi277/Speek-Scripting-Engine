@@ -15,7 +15,7 @@ public class Tokenizer {
     private Deque<Integer> indentStack;
 
     public Tokenizer(String source) {
-        this.source = source;
+        this.source = source.toLowerCase();
         this.pos = 0;
         this.line = 1;
         this.indentStack = new ArrayDeque<>();//// Using Deque instead of Stack because it is a modern and faster alternative.
@@ -26,7 +26,7 @@ public class Tokenizer {
     private static final Map<String, TokenType> keywords = new HashMap<>();
 
     // Multi-word expressions treated as a single token (e.g. "is greater than")
-    private static final Map<String, TokenType> phrases = new HashMap<>();
+    private static final Map<String, TokenType> phrases = new LinkedHashMap<>();
 
     static {
         keywords.put("let", TokenType.LET);
@@ -69,7 +69,7 @@ public class Tokenizer {
             // Step 2: Count spaces at start of next line
             int currentIndent = 0;
             while (pos < source.length() && (source.charAt(pos) == ' '||source.charAt(pos)=='\t')) {
-                currentIndent++;
+                currentIndent += (source.charAt(pos) == '\t') ? 4 : 1;
                 pos++;
             }
 
@@ -85,6 +85,9 @@ public class Tokenizer {
                 indentStack.pop();
                 previousIndent = indentStack.peek();
                 tokens.add(createToken(TokenType.DEDENT, "", line));
+                }
+                if (currentIndent != indentStack.peek()) {
+                throw new RuntimeException("Inconsistent indentation at line " + line);
                 }
             }
 
@@ -151,13 +154,17 @@ public class Tokenizer {
 
         while (pos < source.length() && source.charAt(pos) != '"') {
             char c = source.charAt(pos);
+            /*track newline inside string*/
+            if (c == '\n') {
+                line++;
+            }
 
             if (c == '\\' && pos + 1 < source.length()) {
                 pos++;
                 char next = source.charAt(pos);
 
                 switch (next) {
-                    case 'n': sb.append('\n'); break;
+                    case 'n': sb.append('\n');break;
                     case 't': sb.append('\t'); break;
                     case '"': sb.append('"'); break;
                     case '\\': sb.append('\\'); break;
@@ -207,26 +214,36 @@ public class Tokenizer {
      */
     private List<Token> readWordOrPhrase() {
         List<Token> result = new ArrayList<>();
-
-        int start = pos;
         int startLine = line;
 
+        // STEP 1: Check phrases FIRST
+        for (String phrase : phrases.keySet()) {
+            if (source.startsWith(phrase, pos)) {
+
+                int end = pos + phrase.length();
+
+                // word boundary check
+                if (end >= source.length() ||
+                    !Character.isLetterOrDigit(source.charAt(end))) {
+
+                    pos = end;
+                    result.add(createToken(phrases.get(phrase), phrase, startLine));
+                    return result;
+                }
+            }
+        }
+
+        // STEP 2: Now read normal word
+        int start = pos;
+
         while (pos < source.length() &&
-                (Character.isLetterOrDigit(source.charAt(pos)) || source.charAt(pos) == '_')) {
+            (Character.isLetterOrDigit(source.charAt(pos)) || source.charAt(pos) == '_')) {
             pos++;
         }
 
         String word = source.substring(start, pos);
-
-        for (String phrase : phrases.keySet()) {
-            if (source.startsWith(phrase, start)) {
-                pos = start + phrase.length();
-                result.add(createToken(phrases.get(phrase), phrase, startLine));
-                return result;
-            }
-        }
-
         result.add(createToken(classify(word), word, startLine));
+
         return result;
     }
 
@@ -278,6 +295,7 @@ public class Tokenizer {
                     tokens.add(createToken(TokenType.EQUALS, "==", line));
                     pos += 2;
                 } else {
+                    System.err.println("Warning: single '=' ignored at line " + line);
                     pos++;
                 }
                 break;
