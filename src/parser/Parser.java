@@ -33,13 +33,12 @@ public class Parser {
         if (match(TokenType.IF)) return parseIf();
         if (match(TokenType.REPEAT)) return parseRepeat();
 
-        throw new RuntimeException("Invalid statement");
+        throw error("Invalid statement");
     }
 
     private Instruction parseAssign() {
-        String name = consume(TokenType.IDENTIFIER).getValue();
+        String name = consume(TokenType.IDENTIFIER).value();
         consume(TokenType.BE);
-
         Expression expr = parseExpression();
         return new AssignInstruction(name, expr);
     }
@@ -52,16 +51,19 @@ public class Parser {
     private Instruction parseIf() {
         Expression condition = parseExpression();
         consume(TokenType.THEN);
+        consume(TokenType.NEWLINE);
+        consume(TokenType.INDENT);
 
         List<Instruction> body = new ArrayList<>();
 
-        if (match(TokenType.NEWLINE)) {
-            while (!check(TokenType.EOF)) {
-                if (check(TokenType.LET) || check(TokenType.SAY)) {
-                    body.add(parseStatement());
-                } else break;
-            }
+        while (!check(TokenType.DEDENT) && !check(TokenType.EOF)) {
+
+            if (match(TokenType.NEWLINE)) continue;
+
+            body.add(parseStatement());
         }
+
+        consume(TokenType.DEDENT);
 
         return new IfInstruction(condition, body);
     }
@@ -69,23 +71,19 @@ public class Parser {
     private Instruction parseRepeat() {
         Expression countExpr = parseExpression();
         consume(TokenType.TIMES);
+        consume(TokenType.NEWLINE);
+        consume(TokenType.INDENT);
 
         List<Instruction> body = new ArrayList<>();
 
-        if (match(TokenType.NEWLINE)) {
-            while (!check(TokenType.EOF)) {
+        while (!check(TokenType.DEDENT) && !check(TokenType.EOF)) {
 
-                if (match(TokenType.NEWLINE)) continue;
+            if (match(TokenType.NEWLINE)) continue;
 
-                if (check(TokenType.LET) || 
-                    check(TokenType.SAY) || 
-                    check(TokenType.IF) || 
-                    check(TokenType.REPEAT)) {
-
-                    body.add(parseStatement());
-                } else break;
-            }
+            body.add(parseStatement());
         }
+
+        consume(TokenType.DEDENT);
 
         return new RepeatInstruction(countExpr, body);
     }
@@ -99,7 +97,7 @@ public class Parser {
                match(TokenType.LESS_THAN) ||
                match(TokenType.EQUALS)) {
 
-            String op = previous().getValue();
+            String op = previous().value();
             Expression right = parseTerm();
             expr = new BinaryOpNode(expr, op, right);
         }
@@ -111,7 +109,7 @@ public class Parser {
         Expression expr = parsePrimary();
 
         while (match(TokenType.MUL) || match(TokenType.DIV)) {
-            String op = previous().getValue();
+            String op = previous().value();
             Expression right = parsePrimary();
             expr = new BinaryOpNode(expr, op, right);
         }
@@ -122,15 +120,15 @@ public class Parser {
     private Expression parsePrimary() {
 
         if (match(TokenType.NUMBER))
-            return new NumberNode(Double.parseDouble(previous().getValue()));
+            return new NumberNode(Double.parseDouble(previous().value()));
 
         if (match(TokenType.STRING))
-            return new StringNode(previous().getValue());
+            return new StringNode(previous().value());
 
         if (match(TokenType.IDENTIFIER))
-            return new VariableNode(previous().getValue());
+            return new VariableNode(previous().value());
 
-        throw new RuntimeException("Invalid expression");
+        throw error("Invalid expression");
     }
 
     private boolean match(TokenType type) {
@@ -142,15 +140,21 @@ public class Parser {
     }
 
     private boolean check(TokenType type) {
-        return tokens.get(pos).getType() == type;
+        if (pos >= tokens.size()) return false;
+        return tokens.get(pos).type() == type;
     }
 
     private Token consume(TokenType type) {
         if (check(type)) return tokens.get(pos++);
-        throw new RuntimeException("Expected " + type);
+        throw error("Expected " + type);
     }
 
     private Token previous() {
         return tokens.get(pos - 1);
+    }
+
+    private RuntimeException error(String msg) {
+        int line = (pos < tokens.size()) ? tokens.get(pos).line() : -1;
+        return new RuntimeException(msg + " at line " + line);
     }
 }
