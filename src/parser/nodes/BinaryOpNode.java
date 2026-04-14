@@ -24,7 +24,13 @@ public class BinaryOpNode implements Expression {
             case "+": return a + b;
             case "-": return a - b;
             case "*": return a * b;
-            case "/": return a / b;
+                
+            case "/":
+                if (b == 0) {
+                    throw new RuntimeException("Division by zero error");
+                }
+                return a / b;
+                
             case ">": return a > b;
             case "<": return a < b;
             case "==": return a == b;
