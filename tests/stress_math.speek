@@ -1,0 +1,12 @@
+let a be -5
+let b be 10
+let c be 2
+
+say "Testing negative numbers and precedence..."
+let result be a + b * c - b / c
+
+say "Expected math: -5 + 20 - 5 = 10.0"
+say "Actual result: " + result
+
+if result == 10 then
+    say "Math engine is structurally flawless."
