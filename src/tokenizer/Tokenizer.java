@@ -15,28 +15,19 @@ public class Tokenizer {
     private Deque<Integer> indentStack;
 
     public Tokenizer(String source) {
-        this.source = source.toLowerCase();
+        this.source = source;
         this.pos = 0;
         this.line = 1;
         this.indentStack = new ArrayDeque<>();//// Using Deque instead of Stack because it is a modern and faster alternative.
         indentStack.push(0);
     }
 
-    // Reserved words the language understands (e.g. "if", "let", "repeat")
-    private static final Map<String, TokenType> keywords = new HashMap<>();
+
 
     // Multi-word expressions treated as a single token (e.g. "is greater than")
     private static final Map<String, TokenType> phrases = new LinkedHashMap<>();
 
     static {
-        keywords.put("let", TokenType.LET);
-        keywords.put("be", TokenType.BE);
-        keywords.put("say", TokenType.SAY);
-        keywords.put("if", TokenType.IF);
-        keywords.put("then", TokenType.THEN);
-        keywords.put("repeat", TokenType.REPEAT);
-        keywords.put("times", TokenType.TIMES);
-
         phrases.put("is greater than", TokenType.GREATER_THAN);
     }
 
@@ -60,7 +51,7 @@ public class Tokenizer {
                 // Step 1: Add NEWLINE (same as before)
                 if (!tokens.isEmpty() &&
                     tokens.get(tokens.size() - 1).type() != TokenType.NEWLINE) {
-                tokens.add(createToken(TokenType.NEWLINE, "\\n", line));
+                tokens.add(createToken(TokenType.NEWLINE, "\n", line));
                 }
 
             line++;
@@ -68,11 +59,19 @@ public class Tokenizer {
 
             // Step 2: Count spaces at start of next line
             int currentIndent = 0;
-            while (pos < source.length() && (source.charAt(pos) == ' '||source.charAt(pos)=='\t')) {
-                currentIndent += (source.charAt(pos) == '\t') ? 4 : 1;
-                pos++;
+            int tempPos = pos;
+            while (tempPos < source.length() && (source.charAt(tempPos) == ' '||source.charAt(tempPos)=='\t')) {
+                currentIndent += (source.charAt(tempPos) == '\t') ? 4 : 1;
+                tempPos++;
             }
-
+            //If line is empty or just whitespace skip it. 
+            //prevents empty line from causing false dedent tokens.
+            if(tempPos>=source.length()||source.charAt(tempPos)=='\n'||source.charAt(tempPos)=='\r'){
+                pos = tempPos;
+                continue;
+            }
+            //Apply counted space to our actual position
+            pos = tempPos;
             int previousIndent = indentStack.peek();
 
             // Step 3: Compare indentation
@@ -80,14 +79,14 @@ public class Tokenizer {
                 indentStack.push(currentIndent);
                 tokens.add(createToken(TokenType.INDENT, "", line));
                 
-            } else {
-            while (currentIndent < previousIndent) {
-                indentStack.pop();
-                previousIndent = indentStack.peek();
-                tokens.add(createToken(TokenType.DEDENT, "", line));
+            } else if(currentIndent < previousIndent) {
+                while (currentIndent < previousIndent) {
+                    indentStack.pop();
+                    previousIndent = indentStack.peek();
+                    tokens.add(createToken(TokenType.DEDENT, "", line));
                 }
                 if (currentIndent != indentStack.peek()) {
-                throw new RuntimeException("Inconsistent indentation at line " + line);
+                    throw new RuntimeException("Inconsistent indentation at line " + line);
                 }
             }
 
@@ -218,16 +217,17 @@ public class Tokenizer {
 
         // STEP 1: Check phrases FIRST
         for (String phrase : phrases.keySet()) {
-            if (source.startsWith(phrase, pos)) {
+            //// regionMatches(ignoreCase, startOffset, otherString, otherOffset, length)
+            if (source.regionMatches(true, pos,phrase,0,phrase.length())) {
 
                 int end = pos + phrase.length();
 
                 // word boundary check
-                if (end >= source.length() ||
-                    !Character.isLetterOrDigit(source.charAt(end))) {
+                if (end >= source.length() ||!Character.isLetterOrDigit(source.charAt(end))) {
+                    String actualValue = source.substring(pos, end); // Capture original casing
 
                     pos = end;
-                    result.add(createToken(phrases.get(phrase), phrase, startLine));
+                    result.add(createToken(phrases.get(phrase), actualValue, startLine));
                     return result;
                 }
             }
@@ -236,8 +236,7 @@ public class Tokenizer {
         // STEP 2: Now read normal word
         int start = pos;
 
-        while (pos < source.length() &&
-            (Character.isLetterOrDigit(source.charAt(pos)) || source.charAt(pos) == '_')) {
+        while (pos < source.length() &&(Character.isLetterOrDigit(source.charAt(pos)) || source.charAt(pos) == '_')) {
             pos++;
         }
 
@@ -249,7 +248,7 @@ public class Tokenizer {
 
     // Looks up the word in keywords map — returns IDENTIFIER if not found
     private TokenType classify(String word) {
-        return keywords.getOrDefault(word.toLowerCase(), TokenType.IDENTIFIER);
+         return TokenType.lookup(word);
     }
 
     /**
