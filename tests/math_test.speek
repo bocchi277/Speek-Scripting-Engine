@@ -1,0 +1,5 @@
+let base be 10
+let multiplier be 5
+let result be base + multiplier * 2
+say "The result should be 20.0"
+say result

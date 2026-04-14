@@ -1,0 +1,8 @@
+let score be 85
+let passing_grade be 50
+
+if score > passing_grade then
+    say "You passed the exam!"
+    say "Congratulations."
+
+say "End of program."
