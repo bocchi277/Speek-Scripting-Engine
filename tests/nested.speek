@@ -1,0 +1,17 @@
+let target be 3
+let current be 1
+
+say "Starting nested execution..."
+
+repeat 2 times
+    if current < target then
+        say "Outer Loop Iteration: " + current
+        let inner_count be 1
+
+        repeat 3 times
+            say "  Inner step: " + inner_count
+            let inner_count be inner_count + 1
+
+    let current be current + 1
+
+say "Nested execution complete."

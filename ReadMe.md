@@ -1,274 +1,304 @@
-
-[//]: # (Do Not Push IN main for now!!)
-=======
-# 🗣️ SPEEK Scripting Engine
-
-> **Simple Plain English Execution Kit** — a custom scripting language interpreter built from scratch in Java.
-
-SPEEK lets you write and run programs in plain English. No semicolons, no brackets, no boilerplate — just readable code that actually executes.
-
 ```
+███████╗██████╗ ███████╗███████╗██╗  ██╗
+██╔════╝██╔══██╗██╔════╝██╔════╝██║ ██╔╝
+███████╗██████╔╝█████╗  █████╗  █████╔╝ 
+╚════██║██╔═══╝ ██╔══╝  ██╔══╝  ██╔═██╗ 
+███████║██║     ███████╗███████╗██║  ██╗
+╚══════╝╚═╝     ╚══════╝╚══════╝╚═╝  ╚═╝
+```
+ 
+**Simple Plain English Execution Kit**
+ 
+*A custom scripting language interpreter — built from scratch in Java.*
+ 
+[![Java](https://imgs.search.brave.com/rhxy3SznYZa7d7ztHrI7yk4a6MBO0sN5Cv6iUG_D-lg/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9tZWRp/YS5pc3RvY2twaG90/by5jb20vaWQvMTA0/NjQ4NTE5MC92ZWN0/b3IvaGVsbG8td29y/ZC1jbG91ZC1pbi1k/aWZmZXJlbnQtbGFu/Z3VhZ2VzLmpwZz9z/PTYxMng2MTImdz0w/Jms9MjAmYz1sUVd3/YXhuczBSbEZMVUls/Q3lDOVljc0xRUVZv/dnlVeGZRT2FkcTRm/NFFRPQ)
+
+---
+ 
+> *Write code the way you think. No semicolons. No brackets. No boilerplate. Just words that execute.*
+ 
+```plaintext
 let score be 85
 if score is greater than 50 then
-say "Pass"
-
+    say "You passed!"
+ 
 repeat 3 times
-say "hello"
+    say "SPEEK is alive"
 ```
-
+ 
 ```
-Pass
-hello
-hello
-hello
+▶  You passed!
+   SPEEK is alive
+   SPEEK is alive
+   SPEEK is alive
 ```
-
+ 
 ---
-
-## 📋 Table of Contents
-
-- [About the Project](#about-the-project)
-- [Getting Started](#getting-started)
-  - [Prerequisites](#prerequisites)
-  - [Installation](#installation)
-  - [Running a Program](#running-a-program)
-- [Project Structure](#project-structure)
-- [Language Syntax](#language-syntax)
-- [How It Works](#how-it-works)
-- [Contributing](#contributing)
-- [Team](#team)
-
+ 
+## ◈ Table of Contents
+ 
+- [What is SPEEK?](#-what-is-speek)
+- [Getting Started](#-getting-started)
+- [Language Syntax](#-language-syntax)
+- [How It Works](#-how-it-works)
+- [Project Structure](#-project-structure)
+- [Contributing](#-contributing)
+- [Team](#-team)
+ 
 ---
-
-## About the Project
-
-SPEEK is a fully working interpreter for a small made-up programming language. You write code in `.speek` files, run the interpreter, and see real output on screen.
-
-Built as a group project for **Advanced Object-Oriented Programming in Java** at Sitare University. The entire interpreter is written in pure Java with no external libraries.
-
-**What it supports:**
-- Variable assignment and arithmetic expressions
-- String output
-- Conditional blocks (`if ... then`)
-- Fixed-count loops (`repeat N times`)
-- Correct operator precedence — `*` before `+`, just like standard maths
-
-**What makes it interesting:**
-- Built around a real 3-stage pipeline: Tokenizer → Parser → Evaluator
-- Every stage is designed using SOLID principles and OOP patterns
-- Reads the phrase `"is greater than"` as a single comparison token
-
+ 
+## ◈ What is SPEEK?
+ 
+SPEEK is a fully working interpreter for a purpose-built scripting language. Write `.speek` files in natural English — run them like any program — see real output.
+ 
+Built as a group project for **Advanced Object-Oriented Programming in Java** at Sitare University. Zero external libraries. Pure Java from the ground up.
+ 
+### What it supports
+ 
+| Feature | Description |
+|---|---|
+| `let x be ...` | Variable assignment with arithmetic |
+| `say ...` | Print strings and variables to stdout |
+| `if ... then` | Conditional blocks with indentation |
+| `repeat N times` | Fixed-count loop blocks |
+| `is greater than` | Natural-language comparison operators |
+| `+ - * /` | Arithmetic with correct precedence |
+ 
+### What makes it interesting
+ 
+- **Real 3-stage pipeline** — Tokenizer → Parser → Evaluator, each stage fully decoupled
+- **SOLID principles throughout** — every class has one job and does it well
+- **Multi-word token recognition** — reads `is greater than` as a single comparison token
+- **Operator precedence** — `*` and `/` always before `+` and `-`, just like real math
+ 
 ---
-
-## Getting Started
-
+ 
+## ◈ Getting Started
+ 
 ### Prerequisites
-
-You need Java JDK 11 or later installed.
-
+ 
+You need **Java JDK 11 or later**.
+ 
 ```bash
-# Check if you already have it
+# Check your current version
 java -version
 javac -version
 ```
-
-If not installed:
-- **Ubuntu / Debian** — `sudo apt install default-jdk`
-- **macOS** — `brew install openjdk`
-- **Windows** — download from [adoptium.net](https://adoptium.net)
-
+Don't have Java? Click to install
+ 
+| Platform | Command |
+|---|---|
+| Ubuntu / Debian | `sudo apt install default-jdk` |
+| macOS | `brew install openjdk` |
+| Windows | [Download from Adoptium](https://adoptium.net) |
+ 
 ### Installation
-
+ 
 ```bash
-# 1. Clone the repository
+# 1 — Clone the repo
 git clone https://github.com/bocchi277/Speek-Scripting-Engine.git
-
-# 2. Navigate into the project
+ 
+# 2 — Enter the project
 cd Speek-Scripting-Engine
-
-# 3. Compile
-mkdir -p out
-javac -d out \
-  src/tokenizer/*.java \
-  src/parser/*.java \
-  src/parser/nodes/*.java \
-  src/evaluator/*.java \
-  src/evaluator/instructions/*.java \
-  src/interpreter/*.java \
-  Main.java
+ 
+# 3 — Compile the engine
+javac src/tokenizer/*.java \
+      src/parser/*.java \
+      src/parser/nodes/*.java \
+      src/evaluator/*.java \
+      src/evaluator/instructions/*.java \
+      src/interpreter/*.java
 ```
-
-### Running a Program
-
-Create a file called `hello.speek`:
-
-```
+ 
+### Run your first program
+ 
+Create `tests/hello.speek`:
+ 
+```plaintext
 let name be "World"
 say "Hello"
 say name
 ```
-
-Run it:
-
+ 
+Execute it:
+ 
 ```bash
-java -cp out Main hello.speek
+java -cp src interpreter.Interpreter tests/hello.speek
 ```
-
+ 
 Output:
+ 
 ```
 Hello
 World
 ```
-
-**Debug mode** — prints the token stream, instruction list, and every variable change:
-
-```bash
-java -cp out Main hello.speek --debug
-```
-
+ 
 ---
-
-## Project Structure
-
-```
-speek-interpreter/
-│
-├── src/
-│   ├── tokenizer/              # Stage 1 — Lexical Analysis
-│   │   ├── Token.java          # Immutable token value object
-│   │   ├── TokenType.java      # Enum of all token types
-│   │   └── Tokenizer.java      # Converts source text → token list
-│   │
-│   ├── parser/                 # Stage 2 — Syntax Analysis
-│   │   ├── Parser.java         # Converts token list → instruction list
-│   │   ├── Expression.java     # Expression interface
-│   │   └── nodes/              # AST node classes
-│   │       ├── NumberNode.java
-│   │       ├── StringNode.java
-│   │       ├── VariableNode.java
-│   │       └── BinaryOpNode.java
-│   │
-│   ├── evaluator/              # Stage 3 — Execution
-│   │   ├── Environment.java    # Variable store (Map<String, Object>)
-│   │   ├── Instruction.java    # Instruction interface
-│   │   └── instructions/       # Concrete instruction classes
-│   │       ├── AssignInstruction.java
-│   │       ├── PrintInstruction.java
-│   │       ├── IfInstruction.java
-│   │       └── RepeatInstruction.java
-│   │
-│   └── interpreter/
-│       └── Interpreter.java    # Wires all 3 stages together
-│
-├── test/                       # Sample .speek programs
-├── Main.java                   # CLI entry point
-└── README.md
-```
-
----
-
-## Language Syntax
-
-### Assign a variable
-```
+ 
+## ◈ Language Syntax
+ 
+### Assign a Variable
+ 
+```plaintext
 let x be 10
 let name be "Sitare"
 let result be x + y * 2
 ```
-
-### Print to screen
-```
+ 
+### Print to Screen
+ 
+```plaintext
 say x
 say "hello world"
 ```
-
-### Conditional
+ 
+### Conditional Block
+ 
+> ⚠ Indentation is required inside blocks.
+ 
+```plaintext
+if score > 50 then
+    say "Pass"
 ```
-if score is greater than 50 then
-say "Pass"
-```
-
-### Loop
-```
+ 
+### Loop Block
+ 
+> ⚠ Indentation is required inside blocks.
+ 
+```plaintext
 repeat 4 times
-say "hello"
+    say "hello"
 ```
-
+ 
 ### Operators
-
-| Operator | Description |
-|----------|-------------|
-| `+`  `-`  `*`  `/` | Arithmetic |
-| `is greater than` | Greater-than comparison (plain English) |
-| `>` | Greater than (symbol shorthand) |
-| `<` | Less than |
-| `==` | Equality check |
-
-Operator precedence follows standard maths — `*` and `/` always before `+` and `-`.
-
+ 
+| Operator | Type | Description |
+|---|---|---|
+| `+` `-` `*` `/` | Arithmetic | Standard math operations |
+| `is greater than` | Comparison | Plain-English greater-than |
+| `>` | Comparison | Symbol shorthand for greater-than |
+| `<` | Comparison | Less than |
+| `==` | Comparison | Equality check |
+ 
+> **Precedence:** `*` and `/` always evaluate before `+` and `-`.
+ 
 ---
-
-## How It Works
-
-The interpreter runs in three stages:
-
+ 
+## ◈ How It Works
+ 
+SPEEK processes your code through a clean **3-stage pipeline**:
+ 
 ```
-Source text
-    │
-    ▼  Tokenizer
-List<Token>        — "let", "x", "be", "10" ...
-    │
-    ▼  Parser
-List<Instruction>  — AssignInstruction, PrintInstruction ...
-    │
-    ▼  Evaluator
-Output             — results printed to screen
+┌─────────────────────────────────────────────────────────────────┐
+│                        Source Code (.speek)                     │
+└─────────────────────────────┬───────────────────────────────────┘
+                              │
+                    ┌─────────▼─────────┐
+                    │    TOKENIZER      │  Stage 1 — Lexical Analysis
+                    │                   │  Reads char-by-char
+                    │  "let" "x" "be"   │  Produces labelled tokens
+                    │  "10" INDENT ...  │  Handles INDENT / DEDENT
+                    └─────────┬─────────┘
+                              │  List<Token>
+                    ┌─────────▼─────────┐
+                    │      PARSER       │  Stage 2 — Syntax Analysis
+                    │                   │  Recursive-descent parsing
+                    │  AssignInstruct.  │  Builds AST nodes
+                    │  PrintInstruct.   │  Enforces operator precedence
+                    └─────────┬─────────┘
+                              │  List<Instruction>
+                    ┌─────────▼─────────┐
+                    │    EVALUATOR      │  Stage 3 — Execution
+                    │                   │  Walks the instruction list
+                    │  Environment {}   │  Evaluates expressions bottom-up
+                    │  → Output         │  Stores vars in shared memory map
+                    └───────────────────┘
 ```
-
-**Tokenizer** reads the source character by character and produces a flat list of labelled tokens. It also handles the three-word phrase `is greater than` and collapses it into a single token.
-
-**Parser** reads the token list using recursive-descent parsing and builds an Abstract Syntax Tree (AST). Operator precedence is handled automatically by the method call chain — `parseExpression()` → `parseTerm()` → `parsePrimary()`.
-
-**Evaluator** walks the instruction list, evaluates each expression tree bottom-up, and produces the final output. All variable values are stored in a shared `Environment` map.
-
+ 
+| Stage | Class | Responsibility |
+|---|---|---|
+| **Tokenizer** | `Tokenizer.java` | Converts raw source text into a flat token list |
+| **Parser** | `Parser.java` | Transforms token list into an executable instruction tree |
+| **Evaluator** | `Interpreter.java` | Walks the tree, resolves variables, produces output |
+ 
 ---
-
-## Contributing
-
-This project uses a branch-per-section workflow.
-
+ 
+## ◈ Project Structure
+ 
+```
+speek-project/
+│
+├── tests/                          ← Sample .speek programs
+│
+└── src/
+    │
+    ├── tokenizer/                  ← Stage 1: Lexical Analysis
+    │   ├── Token.java              · Immutable token value object
+    │   ├── TokenType.java          · Enum of all recognised token types
+    │   └── Tokenizer.java          · Source text → List<Token>
+    │
+    ├── parser/                     ← Stage 2: Syntax Analysis
+    │   ├── Parser.java             · Token list → instruction list
+    │   ├── Expression.java         · Expression node interface
+    │   └── nodes/                  · AST node implementations
+    │       ├── NumberNode.java
+    │       ├── StringNode.java
+    │       ├── VariableNode.java
+    │       └── BinaryOpNode.java
+    │
+    ├── evaluator/                  ← Stage 3: Execution
+    │   ├── Environment.java        · Variable store — Map<String, Object>
+    │   ├── Instruction.java        · Instruction interface
+    │   └── instructions/           · Concrete instruction types
+    │       ├── AssignInstruction.java
+    │       ├── PrintInstruction.java
+    │       ├── IfInstruction.java
+    │       └── RepeatInstruction.java
+    │
+    └── interpreter/
+        └── Interpreter.java        · Wires all 3 stages; CLI entry point
+```
+ 
+---
+ 
+## ◈ Contributing
+ 
+This project uses a **branch-per-section** workflow to keep work isolated and reviewable.
+ 
+### Branch Map
+ 
 | Branch | Purpose |
-|--------|---------|
-| `main` | Stable, working, merged code only |
-| `noobDevs` | Integration — `Main.java` and `Interpreter.java` |
-| `section/tokenizer` | Tokenizer stage |
-| `section/parser` | Parser stage |
-| `section/evaluator` | Evaluator stage |
-
+|---|---|
+| `main` | Stable, merged, production-ready code only |
+| `noobdev` | Integration testing — merge sections here first |
+| `section/tokenizer` | Tokenizer stage work |
+| `section/parser` | Parser stage work |
+| `section/evaluator` | Evaluator stage work |
+ 
+### Workflow
+ 
 ```bash
-# Work on your section
+# 1 — Work on your section
 git checkout section/tokenizer
-
-# Push your changes
+ 
+# 2 — Make your changes and commit
+git add .
+git commit -m "feat: handle INDENT tokens for nested blocks"
+ 
+# 3 — Push your branch
 git push origin section/tokenizer
-
-# Open a pull request into main when ready
+ 
+# 4 — Open a Pull Request → noobdev
+#     Get it reviewed before anything touches main
+# Merge To Main
 ```
-
-Do not push directly to `main`. Open a pull request and get it reviewed by another team member first.
-
+ 
 ---
-
-## Team
-
-| Member | Section |
-|--------|--------|
-| `Ekta Kumari` | `tokenizer` |
-| ``Aditya` | `parser` |
-| `Sourabh Bisht` | `evaluator` |
-
-
+ 
+## ◈ Team
+ 
+Built with ☕ and stubbornness by the SPEEK team at **Sitare University**  
+Course: *Advanced Object-Oriented Programming in Java*
+ 
 ---
-
-*Sitare University · Advanced OOP in Java · Group Project*
-
+*"The best code reads like a sentence."*

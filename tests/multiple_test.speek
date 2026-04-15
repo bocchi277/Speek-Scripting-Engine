@@ -1,0 +1,18 @@
+let x be 10
+let y be 3
+let sum be x + y * 2
+
+say "Initial Values:"
+say x
+say y
+say sum
+
+if sum > 10 then
+    say "Sum is greater than 10"
+
+    repeat 2 times
+        say "Inside loop"
+        let temp be sum - 1
+        say temp
+
+say "Program End"

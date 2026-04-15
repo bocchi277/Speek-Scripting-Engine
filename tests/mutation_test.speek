@@ -1,0 +1,16 @@
+let anomaly be "Initial String State"
+say anomaly
+
+let anomaly be 100
+let anomaly be anomaly * 1
+say "Mutated to Number State:"
+say anomaly
+
+if anomaly > 0 then
+    let anomaly be anomaly - 50
+    say "Processing..."
+
+    if anomaly == 50 then
+        let anomaly be "Final String State Reached"
+
+say anomaly
